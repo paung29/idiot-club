@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
 public class ClubMemberServiceImpl implements ClubMemberService {
 
 
@@ -42,6 +41,27 @@ public class ClubMemberServiceImpl implements ClubMemberService {
     private final PostRepo postRepo;
     private final JoinedClubsRepo joinedClubsRepo;
 
+    public ClubMemberServiceImpl(
+            UserRepo userRepo,
+            CommunityRepo communityRepo,
+            JoinCommunityRequestRepo joinCommunityRequestRepo,
+            CommunityMembersRepo communityMembersRepo,
+            MyClubRepo myClubRepo,
+            CreateClubRequestRepo createClubRequestRepo,
+            JoinClubRequestRepo joinClubRequestRepo,
+            PostRepo postRepo,
+            JoinedClubsRepo joinedClubsRepo) {
+        this.userRepo = userRepo;
+        this.communityRepo = communityRepo;
+        this.joinCommunityRequestRepo = joinCommunityRequestRepo;
+        this.communityMembersRepo = communityMembersRepo;
+        this.myClubRepo = myClubRepo;
+        this.createClubRequestRepo = createClubRequestRepo;
+        this.joinClubRequestRepo = joinClubRequestRepo;
+        this.postRepo = postRepo;
+        this.joinedClubsRepo = joinedClubsRepo;
+    }
+
     @Override
     @Transactional
     public ApiResponse joinCommunity(JoinCommunityRequestDto dto) {
@@ -50,20 +70,20 @@ public class ClubMemberServiceImpl implements ClubMemberService {
         var community = communityRepo.findById(dto.getCommunityId());
 
         if(user.isEmpty()){
-            return new ApiResponse(false,"user is empty",null);
+            return new ApiResponse(false,"user is empty",(Object) null);
         }
         if(community.isEmpty()){
-            return new ApiResponse(false,"there is no community with this community id",null);
+            return new ApiResponse(false,"there is no community with this community id",(Object) null);
         }
 
         boolean isAlreadyRequest = joinCommunityRequestRepo.existsByUserAndCommunity(user.get(),community.get());
         if(isAlreadyRequest){
-            return new ApiResponse(false,"you are already request for this community",null);
+            return new ApiResponse(false,"you are already request for this community",(Object) null);
         }
 
         boolean isAlreadyMember = communityMembersRepo.existsByUserAndCommunity(user.get(),community.get());
         if(isAlreadyMember){
-            return new ApiResponse(false,"you are already member of this community",null);
+            return new ApiResponse(false,"you are already member of this community",(Object) null);
         }
 
         var joinCommunityrequest = new JoinCommunityRequest();
@@ -86,22 +106,22 @@ public class ClubMemberServiceImpl implements ClubMemberService {
 
 
         if(community == null){
-            return new ApiResponse(false,"community is empty",null);
+            return new ApiResponse(false,"community is empty",(Object) null);
         }
 
         if(user == null){
-            return new ApiResponse(false,"user is empty",null);
+            return new ApiResponse(false,"user is empty",(Object) null);
         }
 
         boolean isMember = communityMembersRepo.existsByUserAndCommunity(user,community);
 
         if(!isMember){
-            return new ApiResponse(false,"you are not member of this community",null);
+            return new ApiResponse(false,"you are not member of this community",(Object) null);
         }
 
         communityMembersRepo.deleteByUserAndCommunity(user,community);
 
-        return new ApiResponse(true,"successfully leaving this community",null);
+        return new ApiResponse(true,"successfully leaving this community",(Object) null);
     }
 
     @Override
@@ -112,21 +132,21 @@ public class ClubMemberServiceImpl implements ClubMemberService {
         var user = userRepo.findById(form.getUserId()).orElse(null);
 
         if(community == null){
-            return new ApiResponse(false,"community is empty",null);
+            return new ApiResponse(false,"community is empty",(Object) null);
         }
 
         if(user == null){
-            return new ApiResponse(false,"user is empty",null);
+            return new ApiResponse(false,"user is empty",(Object) null);
         }
 
         var isMember = communityMembersRepo.existsByUserAndCommunity(user,community);
 
         if(!isMember){
-            return new ApiResponse(false,"you are not member of this community",null);
+            return new ApiResponse(false,"you are not member of this community",(Object) null);
         }
         var communityCreator = community.getCommunityCreator();
         if(communityCreator == null){
-            return new ApiResponse(false,"This community has no creator assigned",null);
+            return new ApiResponse(false,"This community has no creator assigned",(Object) null);
         }
         
         boolean alreadyRequested = createClubRequestRepo.existsByClubLeaderAndCommunityAndStatusIn(
@@ -136,7 +156,7 @@ public class ClubMemberServiceImpl implements ClubMemberService {
         );
         
         if (alreadyRequested) {
-            return new ApiResponse(false, "You already have a club request for this community", null);
+            return new ApiResponse(false, "You already have a club request for this community", (Object) null);
         }
         			
         var clubRequest = new CreateClubRequest();
@@ -152,7 +172,7 @@ public class ClubMemberServiceImpl implements ClubMemberService {
         clubRequest.setStatus(RequestStatus.PENDING);
         createClubRequestRepo.save(clubRequest);
 
-        return new ApiResponse(true,"Club creation request submitted successfully",null);
+        return new ApiResponse(true,"Club creation request submitted successfully",(Object) null);
     }
 
     @Override
@@ -161,29 +181,29 @@ public class ClubMemberServiceImpl implements ClubMemberService {
 
         var community = communityRepo.findById(form.getCommunityId()).orElse(null);
         if(community == null){
-            return new ApiResponse(false,"community is empty",null);
+            return new ApiResponse(false,"community is empty",(Object) null);
         }
 
         var club = myClubRepo.findById(form.getClubId()).orElse(null);
         if(club == null){
-            return new ApiResponse(false,"club is empty",null);
+            return new ApiResponse(false,"club is empty",(Object) null);
         }
 
         var user = userRepo.findById(form.getUserId()).orElse(null);
         if(user == null){
-            return new ApiResponse(false,"user is empty",null);
+            return new ApiResponse(false,"user is empty",(Object) null);
         }
 
         var isMember = communityMembersRepo.existsByUserAndCommunity(user,community);
 
         if(!isMember){
-            return new ApiResponse(false,"you are not member of this community",null);
+            return new ApiResponse(false,"you are not member of this community",(Object) null);
         }
         
         boolean isAlreadyClubMember = joinedClubsRepo.findByUserAndMyClub(user, club) != null;
         
         if (isAlreadyClubMember) {
-            return new ApiResponse(false, "You are already a member of this club", null);
+            return new ApiResponse(false, "You are already a member of this club", (Object) null);
         }
         
         boolean hasPendingOrApprovedRequest = joinClubRequestRepo.existsByUserAndMyClubAndRequestStatusIn(
@@ -193,7 +213,7 @@ public class ClubMemberServiceImpl implements ClubMemberService {
         );
         
         if (hasPendingOrApprovedRequest) {
-            return new ApiResponse(false, "You have already submitted a request for this club", null);
+            return new ApiResponse(false, "You have already submitted a request for this club", (Object) null);
         }
 
         var joinClubRequest = new JoinClubRequest();
@@ -203,7 +223,7 @@ public class ClubMemberServiceImpl implements ClubMemberService {
         joinClubRequest.setRequestStatus(RequestStatus.PENDING);
         joinClubRequestRepo.save(joinClubRequest);
 
-        return new ApiResponse(true,"successfully requested join club",null);
+        return new ApiResponse(true,"successfully requested join club",(Object) null);
     }
 
     @Override
@@ -211,20 +231,20 @@ public class ClubMemberServiceImpl implements ClubMemberService {
     public ApiResponse readPost(ReadPostForm form) {
 
         if(form.getClubId() == null || form.getClubId() == null){
-            return new ApiResponse(false,"Invalid request. Club ID or Community ID is missing.",null);
+            return new ApiResponse(false,"Invalid request. Club ID or Community ID is missing.",(Object) null);
         }
 
         var club = myClubRepo.findById(form.getClubId()).orElse(null);
         var community = communityRepo.findById(form.getCommunityId()).orElse(null);
 
         if(community == null){
-            return new ApiResponse(false,"community not found",null);
+            return new ApiResponse(false,"community not found",(Object) null);
         }
         if(club == null){
-            return new ApiResponse(false,"club not found",null);
+            return new ApiResponse(false,"club not found",(Object) null);
         }
         if(!club.getCommunity().equals(community)){
-            return new ApiResponse(false, "This club does not belong to the given community", null);
+            return new ApiResponse(false, "This club does not belong to the given community", (Object) null);
         }
 
         List<Post> posts = postRepo.findByMyClubOrderByCreatedAtDesc(club);
@@ -237,7 +257,7 @@ public class ClubMemberServiceImpl implements ClubMemberService {
     public ApiResponse leaveClub(LeaveClubForm form) {
 
         if (form.getCommunityId() == null || form.getClubId() == null || form.getUserId() == null) {
-            return new ApiResponse(false, "Invalid request. One or more required fields are missing.", null);
+            return new ApiResponse(false, "Invalid request. One or more required fields are missing.", (Object) null);
         }
 
         var community = communityRepo.findById(form.getCommunityId()).orElse(null);
@@ -245,31 +265,31 @@ public class ClubMemberServiceImpl implements ClubMemberService {
         var user = userRepo.findById(form.getUserId()).orElse(null);
 
         if (community == null) {
-            return new ApiResponse(false, "Community not found", null);
+            return new ApiResponse(false, "Community not found", (Object) null);
         }
         if (club == null) {
-            return new ApiResponse(false, "Club not found", null);
+            return new ApiResponse(false, "Club not found", (Object) null);
         }
         if (user == null) {
-            return new ApiResponse(false, "User not found", null);
+            return new ApiResponse(false, "User not found", (Object) null);
         }
 
         if (!club.getCommunity().equals(community)) {
-            return new ApiResponse(false, "This club does not belong to the given community", null);
+            return new ApiResponse(false, "This club does not belong to the given community", (Object) null);
         }
 
         var joinedClub = joinedClubsRepo.findByUserAndMyClub(user,club);
         if (joinedClub == null) {
-            return new ApiResponse(false, "User is not a member of this club", null);
+            return new ApiResponse(false, "User is not a member of this club", (Object) null);
         }
 
         if (club.getClubLeader().equals(user)) {
-            return new ApiResponse(false, "Club leader cannot leave the club. Transfer leadership first.", null);
+            return new ApiResponse(false, "Club leader cannot leave the club. Transfer leadership first.", (Object) null);
         }
 
         joinedClubsRepo.delete(joinedClub);
 
-        return new ApiResponse(true, "Successfully left the club", null);
+        return new ApiResponse(true, "Successfully left the club", (Object) null);
     }
 
     @Override
@@ -277,7 +297,7 @@ public class ClubMemberServiceImpl implements ClubMemberService {
     public ApiResponse searchCommunity(String name) {
 
         if(name == null || name.isEmpty()){
-            return new ApiResponse(false,"Community name cannot be empty.",null);
+            return new ApiResponse(false,"Community name cannot be empty.",(Object) null);
         }
 
         List<Map<String,Object>> communities = communityRepo.findByCommunityNameContainingIgnoreCase(name)
@@ -294,7 +314,7 @@ public class ClubMemberServiceImpl implements ClubMemberService {
                 .collect(Collectors.toList());
 
         if (communities.isEmpty()) {
-            return new ApiResponse(false, "No communities found with the given name", null);
+            return new ApiResponse(false, "No communities found with the given name", (Object) null);
         }
 
         return new ApiResponse(true, "Communities retrieved successfully", communities);
@@ -305,12 +325,12 @@ public class ClubMemberServiceImpl implements ClubMemberService {
     public ApiResponse viewMyCommunity(Long userId) {
 
         if(userId == null){
-            return new ApiResponse(false, "Invalid request. User ID is required.", null);
+            return new ApiResponse(false, "Invalid request. User ID is required.", (Object) null);
         }
 
         var user = userRepo.findById(userId).orElse(null);
         if(user == null){
-            return new ApiResponse(false, "User not found", null);
+            return new ApiResponse(false, "User not found", (Object) null);
         }
         
 
@@ -336,7 +356,7 @@ public class ClubMemberServiceImpl implements ClubMemberService {
                 .collect(Collectors.toList());
 
         if (communities.isEmpty()) {
-            return new ApiResponse(false, "User has not joined any communities", null);
+            return new ApiResponse(false, "User has not joined any communities", (Object) null);
         }
 
         return new ApiResponse(true, "Communities retrieved successfully", communities);
@@ -347,12 +367,12 @@ public class ClubMemberServiceImpl implements ClubMemberService {
     public ApiResponse viewProfile(Long userId) {
 
         if(userId == null){
-            return new ApiResponse(false, "Invalid request. User ID is required.", null);
+            return new ApiResponse(false, "Invalid request. User ID is required.", (Object) null);
         }
 
         var user = userRepo.findById(userId).orElse(null);
         if (user == null) {
-            return new ApiResponse(false, "User not found", null);
+            return new ApiResponse(false, "User not found", (Object) null);
         }
 
         Map<String, Object> profileInfo = new HashMap<>();
@@ -370,12 +390,12 @@ public class ClubMemberServiceImpl implements ClubMemberService {
     public ApiResponse editProfile(Long userId, String photo) {
 
         if (userId == null || photo == null || photo.isEmpty()) {
-            return new ApiResponse(false, "Invalid request. User ID and photo are required.", null);
+            return new ApiResponse(false, "Invalid request. User ID and photo are required.", (Object) null);
         }
 
         var user = userRepo.findById(userId).orElse(null);
         if (user == null) {
-            return new ApiResponse(false, "User not found", null);
+            return new ApiResponse(false, "User not found", (Object) null);
         }
 
         user.setProfile_image(photo);
@@ -393,22 +413,22 @@ public class ClubMemberServiceImpl implements ClubMemberService {
     public ApiResponse viewClubDetails(Long userId, Long clubId) {
 
         if (userId == null || clubId == null) {
-            return new ApiResponse(false, "Invalid request. User ID and Club ID are required.", null);
+            return new ApiResponse(false, "Invalid request. User ID and Club ID are required.", (Object) null);
         }
 
         var user = userRepo.findById(userId).orElse(null);
         var club = myClubRepo.findById(clubId).orElse(null);
 
         if (user == null) {
-            return new ApiResponse(false, "User not found", null);
+            return new ApiResponse(false, "User not found", (Object) null);
         }
         if (club == null) {
-            return new ApiResponse(false, "Club not found", null);
+            return new ApiResponse(false, "Club not found", (Object) null);
         }
 
         boolean isMember = joinedClubsRepo.existsByUserAndMyClub(user, club);
         if (!isMember) {
-            return new ApiResponse(false, "You are not a member of this club", null);
+            return new ApiResponse(false, "You are not a member of this club", (Object) null);
         }
 
         Map<String, Object> clubDetails = new HashMap<>();
@@ -427,12 +447,12 @@ public class ClubMemberServiceImpl implements ClubMemberService {
     public ApiResponse viewCLubMembers(Long clubId) {
 
         if (clubId == null) {
-            return new ApiResponse(false, "Invalid request. Club ID is required.", null);
+            return new ApiResponse(false, "Invalid request. Club ID is required.", (Object) null);
         }
 
         var club = myClubRepo.findById(clubId).orElse(null);
         if (club == null) {
-            return new ApiResponse(false, "Club not found", null);
+            return new ApiResponse(false, "Club not found", (Object) null);
         }
 
         List<Map<String, Object>> members = joinedClubsRepo.findByMyClub(club)
@@ -447,7 +467,7 @@ public class ClubMemberServiceImpl implements ClubMemberService {
                 .collect(Collectors.toList());
 
         if (members.isEmpty()) {
-            return new ApiResponse(false, "No members found in this club", null);
+            return new ApiResponse(false, "No members found in this club", (Object) null);
         }
 
         return new ApiResponse(true, "Club members retrieved successfully", members);
@@ -458,17 +478,17 @@ public class ClubMemberServiceImpl implements ClubMemberService {
     public ApiResponse viewJoinedClub(Long userId, Long communityId) {
 
         if (userId == null || communityId == null) {
-            return new ApiResponse(false, "Invalid request. User ID and Community ID are required.", null);
+            return new ApiResponse(false, "Invalid request. User ID and Community ID are required.", (Object) null);
         }
 
         var user = userRepo.findById(userId).orElse(null);
         var community = communityRepo.findById(communityId).orElse(null);
 
         if (user == null) {
-            return new ApiResponse(false, "User not found", null);
+            return new ApiResponse(false, "User not found", (Object) null);
         }
         if (community == null) {
-            return new ApiResponse(false, "Community not found", null);
+            return new ApiResponse(false, "Community not found", (Object) null);
         }
 
         List<Map<String, Object>> joinedClubs = joinedClubsRepo.findByUserAndMyClub_Community(user, community)
@@ -491,7 +511,7 @@ public class ClubMemberServiceImpl implements ClubMemberService {
                 .collect(Collectors.toList());
 
         if (joinedClubs.isEmpty()) {
-            return new ApiResponse(false, "User has not joined any clubs in this community", null);
+            return new ApiResponse(false, "User has not joined any clubs in this community", (Object) null);
         }
 
         return new ApiResponse(true, "Joined clubs retrieved successfully", joinedClubs);
@@ -502,12 +522,12 @@ public class ClubMemberServiceImpl implements ClubMemberService {
     public ApiResponse searchClub(Long communityId, String clubName) {
 
         if (communityId == null || clubName == null || clubName.trim().isEmpty()) {
-            return new ApiResponse(false, "Invalid request. Community ID and Club Name are required.", null);
+            return new ApiResponse(false, "Invalid request. Community ID and Club Name are required.", (Object) null);
         }
 
         var community = communityRepo.findById(communityId).orElse(null);
         if (community == null) {
-            return new ApiResponse(false, "Community not found", null);
+            return new ApiResponse(false, "Community not found", (Object) null);
         }
 
         List<Map<String, Object>> matchedClubs = myClubRepo.findByCommunityAndNameContainingIgnoreCase(community, clubName)
@@ -529,7 +549,7 @@ public class ClubMemberServiceImpl implements ClubMemberService {
 
 
         if (matchedClubs.isEmpty()) {
-            return new ApiResponse(false, "No clubs found matching this name in the community", null);
+            return new ApiResponse(false, "No clubs found matching this name in the community", (Object) null);
         }
 
         return new ApiResponse(true, "Matching clubs retrieved successfully", matchedClubs);
@@ -540,12 +560,12 @@ public class ClubMemberServiceImpl implements ClubMemberService {
     public ApiResponse viewClub(Long clubId) {
 
         if (clubId == null) {
-            return new ApiResponse(false, "Invalid request. Club ID is required.", null);
+            return new ApiResponse(false, "Invalid request. Club ID is required.", (Object) null);
         }
 
         var club = myClubRepo.findById(clubId).orElse(null);
         if (club == null) {
-            return new ApiResponse(false, "Club not found", null);
+            return new ApiResponse(false, "Club not found", (Object) null);
         }
 
         Map<String, Object> clubDetails = new HashMap<>();
@@ -575,7 +595,7 @@ public class ClubMemberServiceImpl implements ClubMemberService {
                 .collect(Collectors.toList());
 
         if (allCommunities.isEmpty()) {
-            return new ApiResponse(false, "No communities available", null);
+            return new ApiResponse(false, "No communities available", (Object) null);
         }
 
         return new ApiResponse(true, "All communities retrieved successfully", allCommunities);

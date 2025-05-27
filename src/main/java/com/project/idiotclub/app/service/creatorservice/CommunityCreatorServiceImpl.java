@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class CommunityCreatorServiceImpl implements CommunityCreatorService {
 
 
@@ -45,6 +44,30 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
     private final MyClubRepo myClubRepo;
     private final JoinedClubsRepo joinedClubsRepo;
     private final JoinClubRequestRepo joinClubRequestRepo;
+
+    public CommunityCreatorServiceImpl(
+            CommunityCreatorRepo communityCreatorRepo,
+            CommunityRepo communityRepo,
+            CommunityInfoRepo communityInfoRepo,
+            JoinCommunityRequestRepo joinCommunityRequestRepo,
+            UserRepo userRepo,
+            CommunityMembersRepo communityMembersRepo,
+            CreateClubRequestRepo createClubRequestRepo,
+            MyClubRepo myClubRepo,
+            JoinedClubsRepo joinedClubsRepo,
+            JoinClubRequestRepo joinClubRequestRepo
+    ) {
+        this.communityCreatorRepo = communityCreatorRepo;
+        this.communityRepo = communityRepo;
+        this.communityInfoRepo = communityInfoRepo;
+        this.joinCommunityRequestRepo = joinCommunityRequestRepo;
+        this.userRepo = userRepo;
+        this.communityMembersRepo = communityMembersRepo;
+        this.createClubRequestRepo = createClubRequestRepo;
+        this.myClubRepo = myClubRepo;
+        this.joinedClubsRepo = joinedClubsRepo;
+        this.joinClubRequestRepo = joinClubRequestRepo;
+    }
     
 
     @Override
@@ -54,10 +77,10 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
         Optional<CommunityCreator> communityCreator = communityCreatorRepo.findById(communityCreateDto.getCommunityCreatorId());
 
         if(communityCreator.isEmpty()){
-            return new ApiResponse(false,"there is no such community creator",null);
+            return new ApiResponse(false,"there is no such community creator",(Object) null);
         }
         if(communityCreator.get().getCommunity() != null){
-            return new ApiResponse(false,"you are already craeted community",null);
+            return new ApiResponse(false,"you are already craeted community",(Object) null);
         }
 
 
@@ -105,14 +128,14 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
         var communityCreator = communityCreatorRepo.findById(checkForm.getCommunityCreatorId());
 
         if(request.isEmpty()){
-            return new ApiResponse(false,"there is no such request id",null);
+            return new ApiResponse(false,"there is no such request id",(Object) null);
         }
         if(community.isEmpty()){
-            return new ApiResponse(false,"there is no such community id",null);
+            return new ApiResponse(false,"there is no such community id",(Object) null);
         }
 
         if(communityCreator.isEmpty()){
-            return new ApiResponse(false,"there is no such community creator",null);
+            return new ApiResponse(false,"there is no such community creator",(Object) null);
         }
         
         JoinCommunityRequest joinRequest = request.get();
@@ -125,18 +148,18 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
         	joinCommunityRequestRepo.save(joinRequest);
         	
             joinCommunityRequestRepo.deleteById(checkForm.getJoinCommunityRequestId());
-            return new ApiResponse(false,"you got rejected",null);
+            return new ApiResponse(false,"you got rejected",(Object)(Object) null);
         }
 
         if(result.equals(RequestStatus.PENDING)){
         	
-            return new ApiResponse(false,"you are still waiting for approval",null);
+            return new ApiResponse(false,"you are still waiting for approval",(Object) null);
         }
 
         if(result.equals(RequestStatus.APPROVED)){
         	
         	 if (joinRequest.getStatus() == RequestStatus.APPROVED) {
-        	        return new ApiResponse(false, "This request has already been approved", null);
+        	        return new ApiResponse(false, "This request has already been approved", (Object) null);
         	    }
         	
         	joinRequest.setStatus(RequestStatus.APPROVED);
@@ -152,7 +175,7 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
             }
            
             
-            return new ApiResponse(true,"User has been approved and added to the community",null);
+            return new ApiResponse(true,"User has been approved and added to the community",(Object) null);
 
         }
         return null;
@@ -164,29 +187,29 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
 
         var communityCreator = communityCreatorRepo.findById(form.getCreatorId()).orElse(null);
         if (communityCreator == null) {
-            return new ApiResponse(false, "Invalid Community Creator ID", null);
+            return new ApiResponse(false, "Invalid Community Creator ID", (Object) null);
         }
 
         var community = communityRepo.findById(form.getCommunityId()).orElse(null);
         if (community == null) {
-            return new ApiResponse(false, "Invalid Community ID", null);
+            return new ApiResponse(false, "Invalid Community ID", (Object) null);
         }
 
         var clubRequest = createClubRequestRepo.findById(form.getCreateClubRequestId()).orElse(null);
         if (clubRequest == null) {
-            return new ApiResponse(false, "Club creation request not found", null);
+            return new ApiResponse(false, "Club creation request not found", (Object) null);
         }
 
         if (!clubRequest.getCommunityCreator().equals(communityCreator) || !clubRequest.getCommunity().equals(community)) {
-            return new ApiResponse(false, "This request does not belong to the given community or creator", null);
+            return new ApiResponse(false, "This request does not belong to the given community or creator", (Object) null);
         }
         
         if (clubRequest.getStatus() == RequestStatus.APPROVED) {
-            return new ApiResponse(false, "This request has already been approved", null);
+            return new ApiResponse(false, "This request has already been approved", (Object) null);
         }
         
         if (clubRequest.getStatus() == RequestStatus.REJECTED) {
-            return new ApiResponse(false, "This request has already been rejected", null);
+            return new ApiResponse(false, "This request has already been rejected", (Object) null);
         }
 
         var result = form.getRequestStatus();
@@ -218,20 +241,20 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
             communityInfoRepo.save(communityInfo);
             
        
-            return new ApiResponse(true, "Club request approved and club created successfully", null);
+            return new ApiResponse(true, "Club request approved and club created successfully", (Object) null);
 
         }
 
         if(result == RequestStatus.REJECTED){
         	
         	createClubRequestRepo.deleteById(form.getCreateClubRequestId());        	
-            return new ApiResponse(false, "Club request rejected", null);
+            return new ApiResponse(false, "Club request rejected", (Object) null);
         };
         if(result == RequestStatus.PENDING){
-            return new ApiResponse(false, "Club request pending", null);
+            return new ApiResponse(false, "Club request pending", (Object) null);
         }
 
-        return new ApiResponse(false, "Invalid request status", null);
+        return new ApiResponse(false, "Invalid request status", (Object) null);
     }
 
     @Override
@@ -240,21 +263,21 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
 
         if (form.getCommunityId() == null || form.getLeaderId() == null ||
                 form.getNewCommunityName() == null || form.getNewCommunityDescription() == null || form.getNewCommunityLogo() == null) {
-            return new ApiResponse(false, "Invalid request. All fields are required.", null);
+            return new ApiResponse(false, "Invalid request. All fields are required.", (Object) null);
         }
 
         var community = communityRepo.findById(form.getCommunityId()).orElse(null);
         if (community == null) {
-            return new ApiResponse(false, "Community not found", null);
+            return new ApiResponse(false, "Community not found", (Object) null);
         }
 
         var leader = userRepo.findById(form.getLeaderId()).orElse(null);
         if (leader == null) {
-            return new ApiResponse(false, "Community creator not found", null);
+            return new ApiResponse(false, "Community creator not found", (Object) null);
         }
 
         if (community.getCommunityCreator().getCommunityCreatorId()!=(leader.getId())) {
-            return new ApiResponse(false, "Only the community creator can edit this community", null);
+            return new ApiResponse(false, "Only the community creator can edit this community", (Object) null);
         }
 
         community.setCommunityName(form.getNewCommunityName());
@@ -270,21 +293,21 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
     public ApiResponse viewNewClubRequestDetails(Long communityId, Long createClubRequestId) {
 
         if (communityId == null || createClubRequestId == null) {
-            return new ApiResponse(false, "Invalid request. Community ID and Request ID are required.", null);
+            return new ApiResponse(false, "Invalid request. Community ID and Request ID are required.", (Object) null);
         }
 
         var community = communityRepo.findById(communityId).orElse(null);
         if (community == null) {
-            return new ApiResponse(false, "Community not found", null);
+            return new ApiResponse(false, "Community not found", (Object) null);
         }
 
         var createClubRequest = createClubRequestRepo.findById(createClubRequestId).orElse(null);
         if (createClubRequest == null) {
-            return new ApiResponse(false, "Create club request not found", null);
+            return new ApiResponse(false, "Create club request not found", (Object) null);
         }
 
         if (!createClubRequest.getCommunity().equals(community)) {
-            return new ApiResponse(false, "This request does not belong to the specified community", null);
+            return new ApiResponse(false, "This request does not belong to the specified community", (Object) null);
         }
 
         Map<String, Object> clubRequestDetails = new HashMap<>();
@@ -305,12 +328,12 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
     public ApiResponse viewOwnProfile(Long communityCreatorId) {
 
         if(communityCreatorId == null){
-            return new ApiResponse(false, "Invalid request. Community Creator ID is required.", null);
+            return new ApiResponse(false, "Invalid request. Community Creator ID is required.", (Object) null);
         }
 
         var communityCreator = communityCreatorRepo.findById(communityCreatorId).orElse(null);
         if (communityCreator == null) {
-            return new ApiResponse(false, "Community Creator not found", null);
+            return new ApiResponse(false, "Community Creator not found", (Object) null);
         }
 
         Map<String, Object> profileDetails = new HashMap<>();
@@ -327,12 +350,12 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
     public ApiResponse editProfile(Long creatorId, String photo) {
 
         if (creatorId == null || photo == null || photo.trim().isEmpty()) {
-            return new ApiResponse(false, "Invalid request. Creator ID and photo are required.", null);
+            return new ApiResponse(false, "Invalid request. Creator ID and photo are required.", (Object) null);
         }
 
         var communityCreator = communityCreatorRepo.findById(creatorId).orElse(null);
         if (communityCreator == null) {
-            return new ApiResponse(false, "Community Creator not found", null);
+            return new ApiResponse(false, "Community Creator not found", (Object) null);
         }
         communityCreator.setCreatorPhoto(photo);
         communityCreatorRepo.save(communityCreator);
@@ -344,12 +367,12 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
     public ApiResponse viewClubs(Long communityId) {
 
         if (communityId == null) {
-            return new ApiResponse(false, "Invalid request. Community ID is required.", null);
+            return new ApiResponse(false, "Invalid request. Community ID is required.", (Object) null);
         }
 
         var community = communityRepo.findById(communityId).orElse(null);
         if (community == null) {
-            return new ApiResponse(false, "Community not found", null);
+            return new ApiResponse(false, "Community not found", (Object) null);
         }
 
         List<Map<String, Object>> clubs = myClubRepo.findByCommunity(community)
@@ -369,7 +392,7 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
                 .collect(Collectors.toList());
 
         if (clubs.isEmpty()) {
-            return new ApiResponse(false, "No clubs available in this community", null);
+            return new ApiResponse(false, "No clubs available in this community", (Object) null);
         }
 
         return new ApiResponse(true, "Clubs retrieved successfully", clubs);
@@ -381,7 +404,7 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
 	public ApiResponse viewJoinReason(Long joinCommunityRequsetid) {
 		
 		if(joinCommunityRequsetid == null) {
-			return new ApiResponse(false, "Request id is null", null);
+			return new ApiResponse(false, "Request id is null", (Object) null);
 		}
 		
 		var request = joinCommunityRequestRepo.findById(joinCommunityRequsetid).orElse(null);
@@ -398,19 +421,19 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
 		
 		
 		if(communityId == null) {
-			return new ApiResponse(false, "Community id is null", null);
+			return new ApiResponse(false, "Community id is null", (Object) null);
 		}
 		
 
 	    Optional<Community> communityOpt = communityRepo.findById(communityId);
 	    if (communityOpt.isEmpty()) {
-	        return new ApiResponse(false, "Community not found", null);
+	        return new ApiResponse(false, "Community not found", (Object) null);
 	    }
 		
 		List<JoinCommunityRequest> requests = joinCommunityRequestRepo.findByCommunityAndStatus(communityOpt.get(),RequestStatus.PENDING);
 		
 		if(requests.isEmpty()) {
-			return new ApiResponse(false, "No pending join requests found for this community", null);
+			return new ApiResponse(false, "No pending join requests found for this community", (Object) null);
 		}
 		
 		List<ViewJoinCommunityRequestOutputForm> result = requests.stream().map(request ->{
@@ -430,12 +453,12 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
 	public ApiResponse viewAllNewClubRequest(Long communityId) {
 		
 		if (communityId == null) {
-	        return new ApiResponse(false, "Community ID is required", null);
+	        return new ApiResponse(false, "Community ID is required", (Object) null);
 	    }
 		
 		var community = communityRepo.findById(communityId).orElse(null);
 	    if (community == null) {
-	        return new ApiResponse(false, "Community not found", null);
+	        return new ApiResponse(false, "Community not found", (Object) null);
 	    }
 	    
 	    List<CreateClubRequest> pendingRequests = createClubRequestRepo.findByCommunityAndStatus(
@@ -443,7 +466,7 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
 	    );
 	    
 	    if (pendingRequests.isEmpty()) {
-	        return new ApiResponse(false, "No pending club creation requests found", null);
+	        return new ApiResponse(false, "No pending club creation requests found", (Object) null);
 	    }
 	    
 	    List<Map<String, Object>> result = pendingRequests.stream().map(req -> {
@@ -466,16 +489,16 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
 	public ApiResponse viewMemberList(Long communityId, Long creatorId) {
 		
 		 if (communityId == null || creatorId == null) {
-		        return new ApiResponse(false, "Community ID and Creator ID are required", null);
+		        return new ApiResponse(false, "Community ID and Creator ID are required", (Object) null);
 		 }
 		 
 		 var community = communityRepo.findById(communityId).orElse(null);
 		 if (community == null) {
-		        return new ApiResponse(false, "Community not found", null);
+		        return new ApiResponse(false, "Community not found", (Object) null);
 		 }
 		 
 		 if (community.getCommunityCreator().getCommunityCreatorId() != creatorId) {
-		        return new ApiResponse(false, "Unauthorized: You are not the creator of this community", null);
+		        return new ApiResponse(false, "Unauthorized: You are not the creator of this community", (Object) null);
 		 }
 		 
 		 List<CommunityMembers> members = communityMembersRepo.findByCommunity_CommunityId(communityId);
@@ -496,7 +519,7 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
 	public ApiResponse removeMember(Long creatorId, Long communityId, Long userId) {
 		
 		if (creatorId == null || communityId == null || userId == null) {
-	        return new ApiResponse(false, "Invalid request. All IDs are required.", null);
+	        return new ApiResponse(false, "Invalid request. All IDs are required.", (Object) null);
 	    }
 		
 		var creator = communityCreatorRepo.findById(creatorId).orElse(null);
@@ -504,24 +527,24 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
 	    var user = userRepo.findById(userId).orElse(null);
 	    
 	    if (creator == null) {
-	        return new ApiResponse(false, "Community creator not found", null);
+	        return new ApiResponse(false, "Community creator not found", (Object) null);
 	    }
 	    
 	    if (community == null) {
-	        return new ApiResponse(false, "Community not found", null);
+	        return new ApiResponse(false, "Community not found", (Object) null);
 	    }
 
 	    if (user == null) {
-	        return new ApiResponse(false, "User not found", null);
+	        return new ApiResponse(false, "User not found", (Object) null);
 	    }
 	    
 	    if (!community.getCommunityCreator().equals(creator)) {
-	        return new ApiResponse(false, "You are not the creator of this community", null);
+	        return new ApiResponse(false, "You are not the creator of this community", (Object) null);
 	    }
 	    
 	    var membership = communityMembersRepo.findByUserAndCommunity(user, community);
 	    if (membership == null) {
-	        return new ApiResponse(false, "User is not a member of this community", null);
+	        return new ApiResponse(false, "User is not a member of this community", (Object) null);
 	    }
 	    
 	    communityMembersRepo.delete(membership);
@@ -545,7 +568,7 @@ public class CommunityCreatorServiceImpl implements CommunityCreatorService {
 	        }
 	    }
 		
-	    return new ApiResponse(true, "User removed from community, clubs, and all related requests", null);
+	    return new ApiResponse(true, "User removed from community, clubs, and all related requests", (Object) null);
 	}
 
 

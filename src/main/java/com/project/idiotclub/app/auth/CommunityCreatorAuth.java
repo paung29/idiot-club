@@ -24,7 +24,7 @@ public class CommunityCreatorAuth {
 
     public ApiResponse signUp(String name, String email, String password) {
         if(communityCreatorRepo.findByCreatorEmail(email).isPresent()){
-            return new ApiResponse(false,"already exist this email",null);
+            return new ApiResponse(false,"already exist this email",(Object) null);
         }
         CommunityCreator communityCreator = new CommunityCreator();
         communityCreator.setCreatorEmail(email);
@@ -48,13 +48,13 @@ public class CommunityCreatorAuth {
     public ApiResponse login(String email, String password) {
         Optional<CommunityCreator> communityCreator = communityCreatorRepo.findByCreatorEmail(email);
         if(communityCreator.isEmpty()) {
-            return new ApiResponse(false,"there is no such email",null);
+            return new ApiResponse(false,"there is no such email",(Object) null);
         }
         
         CommunityCreator creator = communityCreator.get();
         
         if(!creator.getCreatorPassword().equals(password)){
-            return new ApiResponse(false,"incorrect password",null);
+            return new ApiResponse(false,"incorrect password",(Object) null);
         }
        
         

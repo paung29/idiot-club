@@ -17,7 +17,7 @@ public class UserAuth{
     public ApiResponse singUp(String name, String email, String password) {
 
         if(userRepo.findByEmail(email).isPresent()){
-            return new ApiResponse(false,"already exist this email",null);
+            return new ApiResponse(false,"already exist this email",(Object) null);
         }
 
         var user = new User();
@@ -36,10 +36,10 @@ public class UserAuth{
         var user = userRepo.findByEmail(email);
 
         if(user.isEmpty()){
-            return  new ApiResponse(false,"there is no such email Please Sign Up",null);
+            return  new ApiResponse(false,"there is no such email Please Sign Up",(Object) null);
         }
         if(!user.get().getPassword().equals(password)){
-            return new ApiResponse(false,"incorrect password",null);
+            return new ApiResponse(false,"incorrect password",(Object) null);
         }
 
         return new ApiResponse(true,"successfully login",user.get());

@@ -10,6 +10,7 @@ import com.project.idiotclub.app.service.memberservice.ClubMemberService;
 import com.project.idiotclub.app.util.member.*;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -18,13 +19,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("api/member")
 @Validated
-@AllArgsConstructor
 public class ClubMemberController {
 
-
-    private final UserAuth userAuth;
-    private final ClubMemberService clubMemberService;
-    private final CommunityCreatorService communityCreatorService;
+    @Autowired
+    private UserAuth userAuth;
+    @Autowired
+    private ClubMemberService clubMemberService;
+    @Autowired
+    private CommunityCreatorService communityCreatorService;
 
     @PostMapping("signup")
     public ResponseEntity<?> signUp(@Valid @RequestBody UserAuthSignUpDto dto){

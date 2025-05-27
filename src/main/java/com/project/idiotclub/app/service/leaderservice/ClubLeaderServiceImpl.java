@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
 public class ClubLeaderServiceImpl implements ClubLeaderService{
 
     private final CommunityRepo communityRepo;
@@ -34,13 +33,27 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
     private final JoinedClubsRepo joinedClubsRepo;
     private final PostRepo postRepo;
 
+    public ClubLeaderServiceImpl(CommunityRepo communityRepo,
+                                 UserRepo userRepo,
+                                 MyClubRepo myClubRepo,
+                                 JoinClubRequestRepo joinClubRequestRepo,
+                                 JoinedClubsRepo joinedClubsRepo,
+                                 PostRepo postRepo) {
+        this.communityRepo = communityRepo;
+        this.userRepo = userRepo;
+        this.myClubRepo = myClubRepo;
+        this.joinClubRequestRepo = joinClubRequestRepo;
+        this.joinedClubsRepo = joinedClubsRepo;
+        this.postRepo = postRepo;
+    }
+
     @Override
     @Transactional
     public ApiResponse decideNewJoinClubRequest(NewJoinClubRequestDecideForm form) {
 
         if (form.getCommunityId() == null || form.getClubId() == null ||
                 form.getJoinClubRequestId() == null || form.getClubLeaderId() == null) {
-            return new ApiResponse(false, "Invalid request. One or more required IDs are null.", null);
+            return new ApiResponse(false, "Invalid request. One or more required IDs are null.", (Object) null);
         }
 
         var community = communityRepo.findById(form.getCommunityId()).orElse(null);
@@ -49,13 +62,13 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
         var clubLeader = userRepo.findById(form.getClubLeaderId()).orElse(null);
 
         if (community == null || club == null || joinRequest == null || clubLeader == null) {
-            return new ApiResponse(true,"Somthing went wrong",null);
+            return new ApiResponse(true,"Somthing went wrong",(Object) null);
         }
         if(club.getCommunity() != community){
-            return new ApiResponse(false, "This club does not belong to the given community", null);
+            return new ApiResponse(false, "This club does not belong to the given community", (Object) null);
         }
         if(!club.getClubLeader().equals(clubLeader)){
-            return new ApiResponse(false, "Only the club leader can approve or reject requests", null);
+            return new ApiResponse(false, "Only the club leader can approve or reject requests", (Object) null);
         }
 
         var decision = form.getRequestStatus();
@@ -72,14 +85,14 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
 
             joinClubRequestRepo.delete(joinRequest);
 
-            return new ApiResponse(true, "Join request approved and removed from pending requests.", null);
+            return new ApiResponse(true, "Join request approved and removed from pending requests.", (Object) null);
         }
         if (decision == RequestStatus.REJECTED) {
             joinClubRequestRepo.delete(joinRequest);
-            return new ApiResponse(true, "Join request rejected successfully.", null);
+            return new ApiResponse(true, "Join request rejected successfully.", (Object) null);
         }
 
-        return new ApiResponse(true, "Invalid request status.", null);
+        return new ApiResponse(true, "Invalid request status.", (Object) null);
     }
 
     @Override
@@ -88,7 +101,7 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
 
         if (form.getLeaderId() == null || form.getClubId() == null ||
                 form.getCommunityId() == null || form.getMessage() == null || form.getMessage().isEmpty()) {
-            return new ApiResponse(false, "Invalid request. One or more required fields are missing.", null);
+            return new ApiResponse(false, "Invalid request. One or more required fields are missing.", (Object) null);
         }
 
         var leader = userRepo.findById(form.getLeaderId()).orElse(null);
@@ -96,21 +109,21 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
         var community = communityRepo.findById(form.getCommunityId()).orElse(null);
 
         if (leader == null) {
-            return new ApiResponse(false, "Club leader not found", null);
+            return new ApiResponse(false, "Club leader not found", (Object) null);
         }
         if (club == null) {
-            return new ApiResponse(false, "Club not found", null);
+            return new ApiResponse(false, "Club not found", (Object) null);
         }
         if (community == null) {
-            return new ApiResponse(false, "Community not found", null);
+            return new ApiResponse(false, "Community not found", (Object) null);
         }
 
         if (!club.getCommunity().equals(community)) {
-            return new ApiResponse(false, "This club does not belong to the given community", null);
+            return new ApiResponse(false, "This club does not belong to the given community", (Object) null);
         }
 
         if (!club.getClubLeader().equals(leader)) {
-            return new ApiResponse(false, "Only the club leader can make announcements", null);
+            return new ApiResponse(false, "Only the club leader can make announcements", (Object) null);
         }
 
         var post = new Post();
@@ -128,26 +141,26 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
     public ApiResponse deleteAnnouncement(Long postId, Long leaderId) {
 
         if (postId == null || leaderId == null) {
-            return new ApiResponse(false, "Invalid request. Post ID or Leader ID is missing.", null);
+            return new ApiResponse(false, "Invalid request. Post ID or Leader ID is missing.", (Object) null);
         }
 
         var post = postRepo.findById(postId).orElse(null);
         var leader = userRepo.findById(leaderId).orElse(null);
 
         if (post == null) {
-            return new ApiResponse(false, "Post not found", null);
+            return new ApiResponse(false, "Post not found", (Object) null);
         }
         if (leader == null) {
-            return new ApiResponse(false, "Club leader not found", null);
+            return new ApiResponse(false, "Club leader not found", (Object) null);
         }
 
         if (!post.getMyClub().getClubLeader().equals(leader)) {
-            return new ApiResponse(false, "Only the club leader can delete this message", null);
+            return new ApiResponse(false, "Only the club leader can delete this message", (Object) null);
         }
 
         postRepo.delete(post);
 
-        return new ApiResponse(true, "Post deleted successfully", null);
+        return new ApiResponse(true, "Post deleted successfully", (Object) null);
     }
 
     @Override
@@ -155,7 +168,7 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
     public ApiResponse removeClubMember(RemoveClubMemberForm form) {
 
         if (form.getLeaderId() == null || form.getClubId() == null || form.getMemberId() == null) {
-            return new ApiResponse(false, "Invalid request. One or more required fields are missing.", null);
+            return new ApiResponse(false, "Invalid request. One or more required fields are missing.", (Object) null);
         }
 
         var leader = userRepo.findById(form.getLeaderId()).orElse(null);
@@ -163,28 +176,28 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
         var member = userRepo.findById(form.getMemberId()).orElse(null);
 
         if (leader == null) {
-            return new ApiResponse(false, "Club leader not found", null);
+            return new ApiResponse(false, "Club leader not found", (Object) null);
         }
         if (club == null) {
-            return new ApiResponse(false, "Club not found", null);
+            return new ApiResponse(false, "Club not found", (Object) null);
         }
         if (member == null) {
-            return new ApiResponse(false, "Member not found", null);
+            return new ApiResponse(false, "Member not found", (Object) null);
         }
 
         var joinedClub = joinedClubsRepo.findByUserAndMyClub(member, club);
 
         if (joinedClub == null) {
-            return new ApiResponse(false, "User is not a member of this club", null);
+            return new ApiResponse(false, "User is not a member of this club", (Object) null);
         }
 
         if (leader.equals(member)) {
-            return new ApiResponse(false, "Club leader cannot remove themselves. Transfer leadership first.", null);
+            return new ApiResponse(false, "Club leader cannot remove themselves. Transfer leadership first.", (Object) null);
         }
 
         joinedClubsRepo.delete(joinedClub);
 
-        return new ApiResponse(true, "Member removed successfully", null);
+        return new ApiResponse(true, "Member removed successfully", (Object) null);
     }
 
     @Override
@@ -192,7 +205,7 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
     public ApiResponse promoteClubLeader(ChangeLeaderForm form) {
 
         if (form.getCurrentLeaderId() == null || form.getClubId() == null || form.getNewLeaderId() == null) {
-            return new ApiResponse(false, "Invalid request. One or more required fields are missing.", null);
+            return new ApiResponse(false, "Invalid request. One or more required fields are missing.", (Object) null);
         }
 
         var currentLeader = userRepo.findById(form.getCurrentLeaderId()).orElse(null);
@@ -200,22 +213,22 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
         var newLeader = userRepo.findById(form.getNewLeaderId()).orElse(null);
 
         if (currentLeader == null) {
-            return new ApiResponse(false, "Current leader not found", null);
+            return new ApiResponse(false, "Current leader not found", (Object) null);
         }
         if (club == null) {
-            return new ApiResponse(false, "Club not found", null);
+            return new ApiResponse(false, "Club not found", (Object) null);
         }
         if (newLeader == null) {
-            return new ApiResponse(false, "New leader not found", null);
+            return new ApiResponse(false, "New leader not found", (Object) null);
         }
 
         if (!club.getClubLeader().equals(currentLeader)) {
-            return new ApiResponse(false, "Only the current club leader can promote a new leader", null);
+            return new ApiResponse(false, "Only the current club leader can promote a new leader", (Object) null);
         }
 
         var newLeaderMembership = joinedClubsRepo.findByUserAndMyClub(newLeader,club);
         if (newLeaderMembership == null) {
-            return new ApiResponse(false, "New leader is not a member of this club", null);
+            return new ApiResponse(false, "New leader is not a member of this club", (Object) null);
         }
 
         var currentLeaderMembership = joinedClubsRepo.findByUserAndMyClub(currentLeader,club);
@@ -230,7 +243,7 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
         club.setClubLeader(newLeader);
         myClubRepo.save(club);
 
-        return new ApiResponse(true, "New club leader promoted successfully", null);
+        return new ApiResponse(true, "New club leader promoted successfully", (Object) null);
     }
 
     @Override
@@ -238,13 +251,13 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
     public ApiResponse viewMyClubDescription(Long clubId) {
 
         if(clubId == null){
-            return new ApiResponse(false, "Invalid request. Club ID is missing.", null);
+            return new ApiResponse(false, "Invalid request. Club ID is missing.", (Object) null);
         }
 
         var club = myClubRepo.findById(clubId).orElse(null);
 
         if(club == null){
-            return new ApiResponse(false, "Club not found", null);
+            return new ApiResponse(false, "Club not found", (Object) null);
         }
 
         return new ApiResponse(true, "Club description retrieved successfully", club.getDescription());
@@ -255,28 +268,28 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
     public ApiResponse editMyClubDescription(EditMyClubDescriptionForm form) {
 
         if(form.getLeaderId() == null || form.getClubId() == null || form.getNewDescription() == null){
-            return new ApiResponse(false, "Invalid request. Required fields are missing.", null);
+            return new ApiResponse(false, "Invalid request. Required fields are missing.", (Object) null);
         }
 
         var club = myClubRepo.findById(form.getClubId()).orElse(null);
         var leader = userRepo.findById(form.getLeaderId()).orElse(null);
 
         if (club == null) {
-            return new ApiResponse(false, "Club not found", null);
+            return new ApiResponse(false, "Club not found", (Object) null);
         }
 
         if (leader == null) {
-            return new ApiResponse(false, "Leader not found", null);
+            return new ApiResponse(false, "Leader not found", (Object) null);
         }
 
         if (!club.getClubLeader().equals(leader)) {
-            return new ApiResponse(false, "Only the club leader can edit the description", null);
+            return new ApiResponse(false, "Only the club leader can edit the description", (Object) null);
         }
 
         club.setDescription(form.getNewDescription());
         myClubRepo.save(club);
 
-        return new ApiResponse(true, "Club description updated successfully", null);
+        return new ApiResponse(true, "Club description updated successfully", (Object) null);
     }
 
     @Override
@@ -284,22 +297,22 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
     public ApiResponse viewReasonToJoin(Long leaderId, Long clubId) {
 
         if (leaderId == null || clubId == null) {
-            return new ApiResponse(false, "Invalid request. Required fields are missing.", null);
+            return new ApiResponse(false, "Invalid request. Required fields are missing.", (Object) null);
         }
 
         var club = myClubRepo.findById(clubId).orElse(null);
         var leader = userRepo.findById(leaderId).orElse(null);
 
         if (club == null) {
-            return new ApiResponse(false, "Club not found", null);
+            return new ApiResponse(false, "Club not found", (Object) null);
         }
 
         if (leader == null) {
-            return new ApiResponse(false, "Leader not found", null);
+            return new ApiResponse(false, "Leader not found", (Object) null);
         }
 
         if (!club.getClubLeader().equals(leader)) {
-            return new ApiResponse(false, "Only the club leader can view join reasons", null);
+            return new ApiResponse(false, "Only the club leader can view join reasons", (Object) null);
         }
 
         List<Map<String, Object>> joinRequests = joinClubRequestRepo.findByMyClub(club)
@@ -324,7 +337,7 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
     public ApiResponse viewClubMembers(Long leaderId, Long clubId) {
 
         if (leaderId == null || clubId == null) {
-            return new ApiResponse(false, "Invalid request. Required fields are missing.", null);
+            return new ApiResponse(false, "Invalid request. Required fields are missing.", (Object) null);
         }
 
         var club = myClubRepo.findById(clubId).orElse(null);
@@ -332,15 +345,15 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
 
 
         if (club == null) {
-            return new ApiResponse(false, "Club not found", null);
+            return new ApiResponse(false, "Club not found", (Object) null);
         }
 
         if (leader == null) {
-            return new ApiResponse(false, "Leader not found", null);
+            return new ApiResponse(false, "Leader not found", (Object) null);
         }
 
         if (!club.getClubLeader().equals(leader)) {
-            return new ApiResponse(false, "Only the club leader can view club members", null);
+            return new ApiResponse(false, "Only the club leader can view club members", (Object) null);
         }
 
         List<Map<String, Object>> clubMembers = joinedClubsRepo.findByMyClub(club)
@@ -363,25 +376,25 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
 	public ApiResponse viewMyCreationClub(Long leaderId, Long commuityId) {
 	
 		 if (leaderId == null || commuityId == null) {
-		        return new ApiResponse(false, "Leader ID and Community ID are required", null);
+		        return new ApiResponse(false, "Leader ID and Community ID are required", (Object) null);
 		   	
 		 }
 		 
 		 var user = userRepo.findById(leaderId).orElse(null);
 		 
 		 if (user == null) {
-		        return new ApiResponse(false, "Club leader not found", null);
+		        return new ApiResponse(false, "Club leader not found", (Object) null);
 		 }
 		 
 		 var community = communityRepo.findById(commuityId).orElse(null);
 		 if (community == null) {
-		        return new ApiResponse(false, "Community not found", null);
+		        return new ApiResponse(false, "Community not found", (Object) null);
 		 }
 		 
 		 var club = myClubRepo.findByClubLeaderAndCommunity(user, community);
 		 
 		 if (club == null) {
-		        return new ApiResponse(false, "No club created by this user in the specified community", null);
+		        return new ApiResponse(false, "No club created by this user in the specified community", (Object) null);
 		    }
 		 
 		 int memberCount = joinedClubsRepo.countByMyClub(club);
@@ -400,7 +413,7 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
 	public ApiResponse viewMyAnnouncement(Long leaderId, Long clubId) {
 		
 		if (leaderId == null || clubId == null) {
-	        return new ApiResponse(false, "Leader ID and Club ID are required", null);
+	        return new ApiResponse(false, "Leader ID and Club ID are required", (Object) null);
 	    }
 		
 		 var userOpt = userRepo.findById(leaderId);
@@ -408,24 +421,24 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
 
 		
 		 if (userOpt.isEmpty()) {
-		        return new ApiResponse(false, "Club leader not found", null);
+		        return new ApiResponse(false, "Club leader not found", (Object) null);
 		 }
 
 		 if (clubOpt.isEmpty()) {
-		        return new ApiResponse(false, "Club not found", null);
+		        return new ApiResponse(false, "Club not found", (Object) null);
 		 }
 		 
 		 var user = userOpt.get();
 		 var club = clubOpt.get();
 		 
 		 if (!club.getClubLeader().equals(user)) {
-		        return new ApiResponse(false, "You are not the leader of this club", null);
+		        return new ApiResponse(false, "You are not the leader of this club", (Object) null);
 		 }
 		 
 		 List<Post> posts = postRepo.findByUserAndMyClub(user, club);
 		 
 		 if (posts.isEmpty()) {
-		        return new ApiResponse(false, "No announcements found", null);
+		        return new ApiResponse(false, "No announcements found", (Object) null);
 		 }
 		 
 		 List<Map<String, Object>> result = posts.stream().map(post -> {
@@ -446,7 +459,7 @@ public class ClubLeaderServiceImpl implements ClubLeaderService{
 	public ApiResponse viewClubJoinReqeuestList(Long clubId) {
 		
 		if (clubId == null) {
-	        return new ApiResponse(false, "Club ID is required", null);
+	        return new ApiResponse(false, "Club ID is required", (Object) null);
 	    }
 		
 		 List<JoinClubRequest> requests = joinClubRequestRepo.findByMyClubId(clubId);
